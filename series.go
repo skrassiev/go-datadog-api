@@ -55,6 +55,7 @@ type Series struct {
 	Scope       *string     `json:"scope,omitempty"`
 	Expression  *string     `json:"expression,omitempty"`
 	Units       *UnitPair   `json:"unit,omitempty"`
+	Attributes  Attributes  `json:"attributes"`
 }
 
 // reqPostSeries from /api/v1/series
