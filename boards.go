@@ -12,21 +12,53 @@ import (
 	"fmt"
 )
 
+// Template variable preset represents a set of template variable values on a dashboard
+// Not available to timeboards and screenboards
+type TemplateVariablePreset struct {
+	Name              *string                       `json:"name,omitempty"`
+	TemplateVariables []TemplateVariablePresetValue `json:"template_variables"`
+}
+
+// Template variable preset value represents the value for "name" template variable to assume
+type TemplateVariablePresetValue struct {
+	Name  *string `json:"name,omitempty"`
+	Value *string `json:"value,omitempty"`
+}
+
 // Board represents a user created dashboard. This is the full dashboard
 // struct when we load a dashboard in detail.
 type Board struct {
-	Title             *string            `json:"title"`
-	Widgets           []BoardWidget      `json:"widgets"`
-	LayoutType        *string            `json:"layout_type"`
-	Id                *string            `json:"id,omitempty"`
-	Description       *string            `json:"description,omitempty"`
-	TemplateVariables []TemplateVariable `json:"template_variables,omitempty"`
-	IsReadOnly        *bool              `json:"is_read_only,omitempty"`
-	NotifyList        []string           `json:"notify_list,omitempty"`
-	AuthorHandle      *string            `json:"author_handle,omitempty"`
-	Url               *string            `json:"url,omitempty"`
-	CreatedAt         *string            `json:"created_at,omitempty"`
-	ModifiedAt        *string            `json:"modified_at,omitempty"`
+	Title                   *string                  `json:"title"`
+	Widgets                 []BoardWidget            `json:"widgets"`
+	LayoutType              *string                  `json:"layout_type"`
+	Id                      *string                  `json:"id,omitempty"`
+	Description             *string                  `json:"description,omitempty"`
+	TemplateVariables       []TemplateVariable       `json:"template_variables,omitempty"`
+	TemplateVariablePresets []TemplateVariablePreset `json:"template_variable_presets,omitempty"`
+	IsReadOnly              *bool                    `json:"is_read_only,omitempty"`
+	NotifyList              []string                 `json:"notify_list,omitempty"`
+	AuthorHandle            *string                  `json:"author_handle,omitempty"`
+	Url                     *string                  `json:"url,omitempty"`
+	CreatedAt               *string                  `json:"created_at,omitempty"`
+	ModifiedAt              *string                  `json:"modified_at,omitempty"`
+}
+
+// BoardLite represents a simplify dashboard (without widgets, notify list, ...)
+// It's used when we load all boards.
+type BoardLite struct {
+	Title        *string `json:"title,omitempty"`
+	Description  *string `json:"description,omitempty"`
+	LayoutType   *string `json:"layout_type,omitempty"`
+	Id           *string `json:"id,omitempty"`
+	Url          *string `json:"url,omitempty"`
+	AuthorHandle *string `json:"author_handle,omitempty"`
+	IsReadOnly   *bool   `json:"is_read_only,omitempty"`
+	CreatedAt    *string `json:"created_at,omitempty"`
+	ModifiedAt   *string `json:"modified_at,omitempty"`
+}
+
+type reqGetBoards struct {
+	Boards []BoardLite `json:"dashboards,omitempty"`
 }
 
 // GetBoard returns a single dashboard created on this account.
@@ -56,4 +88,14 @@ func (client *Client) CreateBoard(board *Board) (*Board, error) {
 // Use this if you've updated your local and need to push it back.
 func (client *Client) UpdateBoard(board *Board) error {
 	return client.doJsonRequest("PUT", fmt.Sprintf("/v1/dashboard/%s", *board.Id), board, nil)
+}
+
+// GetBoards returns all Dashboards.
+func (client *Client) GetBoards() ([]BoardLite, error) {
+	var out reqGetBoards
+	if err := client.doJsonRequest("GET", "/v1/dashboard", nil, &out); err != nil {
+		return nil, err
+	}
+
+	return out.Boards, nil
 }

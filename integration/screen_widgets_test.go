@@ -20,6 +20,7 @@ func TestWidgets(t *testing.T) {
 			FontSize:  datadog.String("36"),
 			Color:     datadog.String("#ffc0cb"),
 		},
+		// Timeseries widget with metrics query.
 		{
 			Type:       datadog.String("timeseries"),
 			X:          datadog.Int(1),
@@ -61,6 +62,146 @@ func TestWidgets(t *testing.T) {
 				}},
 			},
 		},
+		// Timeseries widget with log query.
+		{
+			Type:       datadog.String("timeseries"),
+			X:          datadog.Int(20),
+			Y:          datadog.Int(10),
+			Width:      datadog.Int(40),
+			Height:     datadog.Int(20),
+			Title:      datadog.Bool(true),
+			TitleText:  datadog.String("Test title 2"),
+			TitleSize:  datadog.Int(16),
+			TitleAlign: datadog.String("right"),
+			Legend:     datadog.Bool(true),
+			LegendSize: datadog.String("16"),
+			Time: &datadog.Time{
+				LiveSpan: datadog.String("1d"),
+			},
+			TileDef: &datadog.TileDef{
+				Viz: datadog.String("timeseries"),
+				Requests: []datadog.TileDefRequest{{
+					LogQuery: &datadog.TileDefApmOrLogQuery{
+						Index: datadog.String("avg"),
+						Compute: &datadog.TileDefApmOrLogQueryCompute{
+							Aggregation: datadog.String("count"),
+							Facet:       datadog.String("host"),
+							Interval:    datadog.String("300000"),
+						},
+						Search: &datadog.TileDefApmOrLogQuerySearch{},
+						GroupBy: []datadog.TileDefApmOrLogQueryGroupBy{{
+							Facet: datadog.String("host"),
+							Limit: datadog.Int(10),
+							Sort: &datadog.TileDefApmOrLogQueryGroupBySort{
+								Aggregation: datadog.String("count"),
+								Order:       datadog.String("desc"),
+							},
+						}},
+					},
+					Type: datadog.String("line"),
+					Style: &datadog.TileDefRequestStyle{
+						Palette: datadog.String("purple"),
+						Type:    datadog.String("dashed"),
+						Width:   datadog.String("thin"),
+					},
+				}},
+				Markers: []datadog.TileDefMarker{{
+					Label: datadog.String("test marker"),
+					Type:  datadog.String("error dashed"),
+					Value: datadog.String("y < 5"),
+				}},
+				Events: []datadog.TileDefEvent{{
+					Query: datadog.String("test event"),
+				}},
+			},
+		},
+		// Timeseries widget with Apm query.
+		{
+			Type:       datadog.String("timeseries"),
+			X:          datadog.Int(20),
+			Y:          datadog.Int(10),
+			Width:      datadog.Int(40),
+			Height:     datadog.Int(20),
+			Title:      datadog.Bool(true),
+			TitleText:  datadog.String("Test title 2"),
+			TitleSize:  datadog.Int(16),
+			TitleAlign: datadog.String("right"),
+			Legend:     datadog.Bool(true),
+			LegendSize: datadog.String("16"),
+			Time: &datadog.Time{
+				LiveSpan: datadog.String("1d"),
+			},
+			TileDef: &datadog.TileDef{
+				Viz: datadog.String("timeseries"),
+				Requests: []datadog.TileDefRequest{{
+					ApmQuery: &datadog.TileDefApmOrLogQuery{
+						Index: datadog.String("avg"),
+						Compute: &datadog.TileDefApmOrLogQueryCompute{
+							Aggregation: datadog.String("count"),
+							Facet:       datadog.String("host"),
+							Interval:    datadog.String("300000"),
+						},
+						Search:  &datadog.TileDefApmOrLogQuerySearch{},
+						GroupBy: []datadog.TileDefApmOrLogQueryGroupBy{{}},
+					},
+					Type: datadog.String("line"),
+					Style: &datadog.TileDefRequestStyle{
+						Palette: datadog.String("purple"),
+						Type:    datadog.String("dashed"),
+						Width:   datadog.String("thin"),
+					},
+				}},
+				Markers: []datadog.TileDefMarker{{
+					Label: datadog.String("test marker"),
+					Type:  datadog.String("error dashed"),
+					Value: datadog.String("y < 5"),
+				}},
+				Events: []datadog.TileDefEvent{{
+					Query: datadog.String("test event"),
+				}},
+			},
+		},
+		// Timeseries widget with process query.
+		{
+			Type:       datadog.String("timeseries"),
+			X:          datadog.Int(20),
+			Y:          datadog.Int(10),
+			Width:      datadog.Int(40),
+			Height:     datadog.Int(20),
+			Title:      datadog.Bool(true),
+			TitleText:  datadog.String("Test title 3"),
+			TitleSize:  datadog.Int(16),
+			TitleAlign: datadog.String("right"),
+			Legend:     datadog.Bool(true),
+			LegendSize: datadog.String("16"),
+			Time: &datadog.Time{
+				LiveSpan: datadog.String("1d"),
+			},
+			TileDef: &datadog.TileDef{
+				Viz: datadog.String("timeseries"),
+				Requests: []datadog.TileDefRequest{{
+					ProcessQuery: &datadog.TileDefProcessQuery{
+						Metric: datadog.String("process.stat.cpu.total_pct"),
+						Limit:  datadog.Int(10),
+					},
+					Type: datadog.String("line"),
+					Style: &datadog.TileDefRequestStyle{
+						Palette: datadog.String("purple"),
+						Type:    datadog.String("dashed"),
+						Width:   datadog.String("thin"),
+					},
+				}},
+				Markers: []datadog.TileDefMarker{{
+					Label: datadog.String("test marker"),
+					Type:  datadog.String("error dashed"),
+					Value: datadog.String("y < 5"),
+				}},
+				Events: []datadog.TileDefEvent{{
+					Query: datadog.String("test event"),
+				}},
+			},
+		},
+
 		{
 			Type:       datadog.String("query_value"),
 			X:          datadog.Int(1),
@@ -161,31 +302,33 @@ func TestWidgets(t *testing.T) {
 			},
 		},
 		{
-			Type:       datadog.String("event_timeline"),
-			X:          datadog.Int(1),
-			Y:          datadog.Int(1),
-			Width:      datadog.Int(5),
-			Height:     datadog.Int(5),
-			Title:      datadog.Bool(true),
-			TitleText:  datadog.String("Test title"),
-			TitleSize:  datadog.Int(16),
-			TitleAlign: datadog.String("right"),
+			Type:          datadog.String("event_timeline"),
+			X:             datadog.Int(1),
+			Y:             datadog.Int(1),
+			Width:         datadog.Int(5),
+			Height:        datadog.Int(5),
+			Title:         datadog.Bool(true),
+			TitleText:     datadog.String("Test title"),
+			TitleSize:     datadog.Int(16),
+			TitleAlign:    datadog.String("right"),
+			TagsExecution: datadog.String("or"),
 			Time: &datadog.Time{
 				LiveSpan: datadog.String("1d"),
 			},
 		},
 		{
-			Type:       datadog.String("event_stream"),
-			X:          datadog.Int(1),
-			Y:          datadog.Int(1),
-			Width:      datadog.Int(5),
-			Height:     datadog.Int(5),
-			Title:      datadog.Bool(true),
-			TitleText:  datadog.String("Test title"),
-			TitleSize:  datadog.Int(16),
-			TitleAlign: datadog.String("right"),
-			Query:      datadog.String("*"),
-			EventSize:  datadog.String("l"),
+			Type:          datadog.String("event_stream"),
+			X:             datadog.Int(1),
+			Y:             datadog.Int(1),
+			Width:         datadog.Int(5),
+			Height:        datadog.Int(5),
+			Title:         datadog.Bool(true),
+			TitleText:     datadog.String("Test title"),
+			TitleSize:     datadog.Int(16),
+			TitleAlign:    datadog.String("right"),
+			Query:         datadog.String("*"),
+			TagsExecution: datadog.String("or"),
+			EventSize:     datadog.String("l"),
 			Time: &datadog.Time{
 				LiveSpan: datadog.String("4h"),
 			},
@@ -329,9 +472,11 @@ func TestWidgets(t *testing.T) {
 			Y:                      datadog.Int(1),
 			Width:                  datadog.Int(5),
 			Height:                 datadog.Int(5),
+			SummaryType:            datadog.String("monitors"),
 			DisplayFormat:          datadog.String("countsAndList"),
 			ColorPreference:        datadog.String("background"),
 			HideZeroCounts:         datadog.Bool(true),
+			ShowLastTriggered:      datadog.Bool(true),
 			ManageStatusShowTitle:  datadog.Bool(false),
 			ManageStatusTitleText:  datadog.String("Test title"),
 			ManageStatusTitleSize:  datadog.String("20"),
@@ -354,6 +499,35 @@ func TestWidgets(t *testing.T) {
 			Logset:  datadog.String("1234"),
 			Time: &datadog.Time{
 				LiveSpan: datadog.String("1h"),
+			},
+			ShowDateColumn:    datadog.Bool(true),
+			ShowMessageColumn: datadog.Bool(true),
+			MessageDisplay:    datadog.String("expanded-lg"),
+			Sort: &datadog.WidgetFieldSort{
+				Column: datadog.String("column_1"),
+				Order:  datadog.String("asc"),
+			},
+		},
+		{
+			Type:    datadog.String("log_stream"),
+			X:       datadog.Int(1),
+			Y:       datadog.Int(1),
+			Width:   datadog.Int(5),
+			Height:  datadog.Int(5),
+			Query:   datadog.String("source:main"),
+			Columns: datadog.String("[\"column_1\",\"column_2\",\"column_3\"]"),
+			Indexes: []*string{
+				datadog.String("main"),
+			},
+			Time: &datadog.Time{
+				LiveSpan: datadog.String("1h"),
+			},
+			ShowDateColumn:    datadog.Bool(true),
+			ShowMessageColumn: datadog.Bool(true),
+			MessageDisplay:    datadog.String("expanded-lg"),
+			Sort: &datadog.WidgetFieldSort{
+				Column: datadog.String("column_1"),
+				Order:  datadog.String("asc"),
 			},
 		},
 		{
