@@ -22,7 +22,6 @@ type GraphDefinitionRequestStyle struct {
 
 // GraphDefinitionRequest represents the requests passed into each graph.
 type GraphDefinitionRequest struct {
-	Query              *string                      `json:"q,omitempty"`
 	Stacked            *bool                        `json:"stacked,omitempty"`
 	Aggregator         *string                      `json:"aggregator,omitempty"`
 	ConditionalFormats []DashboardConditionalFormat `json:"conditional_formats,omitempty"`
@@ -37,6 +36,51 @@ type GraphDefinitionRequest struct {
 	OrderBy        *string                            `json:"order_by,omitempty"`
 	ExtraCol       *string                            `json:"extra_col,omitempty"`
 	Metadata       map[string]GraphDefinitionMetadata `json:"metadata,omitempty"`
+
+	// A Graph can only have one of these types of query.
+	Query         *string             `json:"q,omitempty"`
+	LogQuery      *GraphApmOrLogQuery `json:"log_query,omitempty"`
+	ApmQuery      *GraphApmOrLogQuery `json:"apm_query,omitempty"`
+	ProcessQuery  *GraphProcessQuery  `json:"process_query,omitempty"`
+	RumQuery      *GraphApmOrLogQuery `json:"rum_query,omitempty"`
+	SecurityQuery *GraphApmOrLogQuery `json:"security_query,omitempty"`
+}
+
+// GraphApmOrLogQuery represents an APM or a Log query
+type GraphApmOrLogQuery struct {
+	Index   *string                     `json:"index"`
+	Compute *GraphApmOrLogQueryCompute  `json:"compute"`
+	Search  *GraphApmOrLogQuerySearch   `json:"search,omitempty"`
+	GroupBy []GraphApmOrLogQueryGroupBy `json:"groupBy,omitempty"`
+}
+
+type GraphApmOrLogQueryCompute struct {
+	Aggregation *string `json:"aggregation"`
+	Facet       *string `json:"facet,omitempty"`
+	Interval    *int    `json:"interval,omitempty"`
+}
+
+type GraphApmOrLogQuerySearch struct {
+	Query *string `json:"query"`
+}
+
+type GraphApmOrLogQueryGroupBy struct {
+	Facet *string                        `json:"facet"`
+	Limit *int                           `json:"limit,omitempty"`
+	Sort  *GraphApmOrLogQueryGroupBySort `json:"sort,omitempty"`
+}
+
+type GraphApmOrLogQueryGroupBySort struct {
+	Aggregation *string `json:"aggregation"`
+	Order       *string `json:"order"`
+	Facet       *string `json:"facet,omitempty"`
+}
+
+type GraphProcessQuery struct {
+	Metric   *string  `json:"metric"`
+	SearchBy *string  `json:"search_by,omitempty"`
+	FilterBy []string `json:"filter_by,omitempty"`
+	Limit    *int     `json:"limit,omitempty"`
 }
 
 type GraphDefinitionMetadata TileDefMetadata
@@ -70,8 +114,8 @@ type Yaxis struct {
 func (y *Yaxis) UnmarshalJSON(data []byte) error {
 	type Alias Yaxis
 	wrapper := &struct {
-		Min *json.Number `json:"min,omitempty"`
-		Max *json.Number `json:"max,omitempty"`
+		Min *interface{} `json:"min,omitempty"`
+		Max *interface{} `json:"max,omitempty"`
 		*Alias
 	}{
 		Alias: (*Alias)(y),
@@ -81,31 +125,20 @@ func (y *Yaxis) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	if wrapper.Min != nil {
-		if *wrapper.Min == "auto" {
-			y.AutoMin = true
-			y.Min = nil
-		} else {
-			f, err := wrapper.Min.Float64()
-			if err != nil {
-				return err
-			}
-			y.Min = &f
-		}
+	val, auto, err := GetFloatFromInterface(wrapper.Min)
+	if err != nil {
+		return fmt.Errorf(`faild parsing value for Yaxis.min: %s`, err.Error())
 	}
+	y.AutoMin = auto
+	y.Min = val
 
-	if wrapper.Max != nil {
-		if *wrapper.Max == "auto" {
-			y.AutoMax = true
-			y.Max = nil
-		} else {
-			f, err := wrapper.Max.Float64()
-			if err != nil {
-				return err
-			}
-			y.Max = &f
-		}
+	val, auto, err = GetFloatFromInterface(wrapper.Max)
+	if err != nil {
+		return fmt.Errorf(`faild parsing value for Yaxis.max: %s`, err.Error())
 	}
+	y.AutoMax = auto
+	y.Max = val
+
 	return nil
 }
 
